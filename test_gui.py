@@ -9,6 +9,8 @@ import os
 import shlex
 import re
 
+from common import Common
+
 def detect_imports(script_path):
     """Return a list of top-level imported module names from the given script.
 
@@ -41,44 +43,6 @@ def detect_imports(script_path):
     return out
 
 
-def ensure_packages(packages, append_output_func=None):
-    """Ensure packages are importable; install missing ones via pip.
-
-    If `append_output_func` is provided it will be called with progress
-    messages to display in the GUI.
-    """
-    missing = []
-    for pkg in packages:
-        try:
-            __import__(pkg)
-        except Exception:
-            missing.append(pkg)
-    if not missing:
-        if append_output_func:
-            append_output_func('All required packages are already installed.\n')
-        return True
-
-    if append_output_func:
-        append_output_func(f"Installing missing packages: {', '.join(missing)}\n")
-
-    # Install packages one-by-one so we can update progress
-    total = len(missing)
-    for idx, pkg in enumerate(missing, start=1):
-        if append_output_func:
-            append_output_func(f"Installing {pkg} ({idx}/{total})...\n")
-        cmd = [sys.executable, '-m', 'pip', 'install', pkg]
-        try:
-            subprocess.check_call(cmd)
-            if append_output_func:
-                append_output_func(f"{pkg} installed.\n")
-        except subprocess.CalledProcessError as e:
-            if append_output_func:
-                append_output_func(f'Failed to install {pkg}: {e}\n')
-            return False
-        # allow caller to update a progress bar via append_output_func side-effects
-    if append_output_func:
-        append_output_func('All missing packages installed.\n')
-    return True
 
 SCRIPT_PATH = os.path.join(os.path.dirname(__file__), 'test.py')
 
@@ -200,7 +164,7 @@ class App:
                             except Exception:
                                 pass
 
-                ok = ensure_packages(to_check, append_output_func=append_and_update)
+                ok = Common.ensure_packages(to_check, append_output_func=append_and_update)
                 if not ok:
                     messagebox.showerror('Install failed', 'Failed to install required packages. See output for details.')
                     self.run_btn.config(state='normal')
