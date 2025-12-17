@@ -103,3 +103,52 @@ class Common:
                 return False
 
         return True
+
+    @staticmethod
+    def detect_encoding(path, sample_size=65536):
+        """Detect a file's text encoding.
+
+        Tries `charset-normalizer` first (if installed), then falls back to
+        `chardet` if available. If neither is present, checks for common BOMs
+        and otherwise returns 'utf-8' as a sensible default.
+
+        Returns the detected encoding name as a string (never None).
+        """
+        # Read a sample of the file in binary mode
+        try:
+            with open(path, 'rb') as f:
+                sample = f.read(sample_size)
+        except Exception:
+            return 'utf-8'
+
+        # BOM checks (deterministic)
+        if sample.startswith(b'\xef\xbb\bf'):
+            return 'utf-8-sig'
+        if sample.startswith(b'\xff\xfe') or sample.startswith(b'\xfe\xff'):
+            return 'utf-16'
+
+        # Try charset-normalizer if available
+        try:
+            from charset_normalizer import from_bytes
+            try:
+                results = from_bytes(sample)
+                best = results.best()
+                if best and getattr(best, 'encoding', None):
+                    return best.encoding
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+        # Fallback to chardet if available
+        try:
+            import chardet
+            info = chardet.detect(sample)
+            enc = info.get('encoding')
+            if enc:
+                return enc
+        except Exception:
+            pass
+
+        # Last resort: assume utf-8
+        return 'utf-8'

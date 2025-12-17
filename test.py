@@ -70,11 +70,14 @@ def main():
     #    detect problematic fields (e.g. embedded newlines) while scanning.
     # 2) Second pass: reopen file and generate the output using computed widths.
 
+    # detect encoding for the input file and use it for all file opens
+    enc = Common.detect_encoding(args.file)
+
     try:
         # First pass: scan file to compute max lengths
         replaced = False
         errors = []
-        with open(args.file, 'r', encoding='utf-8', errors='replace', newline='') as fh:
+        with open(args.file, 'r', encoding=enc, errors='replace', newline='') as fh:
             reader = csv.reader(fh, delimiter='\t')
             try:
                 headers = next(reader)
@@ -122,7 +125,7 @@ def main():
     # headers and max_lens already computed in first pass; ensure header list available
     # Re-open file briefly to re-read header (if needed for exact original header values)
     try:
-        with open(args.file, 'r', encoding='utf-8', errors='replace', newline='') as fh:
+        with open(args.file, 'r', encoding=enc, errors='replace', newline='') as fh:
             reader = csv.reader(fh, delimiter='\t')
             headers = next(reader)
     except Exception:

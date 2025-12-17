@@ -19,7 +19,8 @@ def detect_imports(script_path):
     """
     mods = []
     try:
-        with open(script_path, 'r', encoding='utf-8') as f:
+        enc = Common.detect_encoding(script_path)
+        with open(script_path, 'r', encoding=enc, errors='replace') as f:
             for line in f:
                 line = line.strip()
                 m = re.match(r'import\s+([a-zA-Z0-9_\.]+)', line)
