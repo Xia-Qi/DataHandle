@@ -1,0 +1,10 @@
+{
+    "editor.renderWhitespace": "all",
+    "editor.renderControlCharacters": true,
+    "editor.guides.indentation": true,
+    "editor.detectIndentation": false,
+
+    "gremlins.showInGutter": true,
+    "gremlins.showInOverviewRuler": true,
+    "gremlins.ignoredChars": []
+}
